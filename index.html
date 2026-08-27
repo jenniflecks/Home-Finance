@@ -33,75 +33,25 @@
     padding-bottom:80px;
   }
   header{
-    background:var(--ink);
-    color:var(--paper);
-    padding:22px 18px 60px;
-    position:relative;
-    overflow:hidden;
-  }
-  header::after{
-    content:"";
-    position:absolute;
-    right:-40px; top:-40px;
-    width:160px; height:160px;
-    border-radius:50%;
-    background:radial-gradient(circle at 30% 30%, var(--teal) 0%, transparent 70%);
-    opacity:.35;
-  }
-  h1{
-    font-family:'Fraunces',serif;
-    font-weight:700;
-    font-size:1.5rem;
-    margin:0 0 4px;
-    letter-spacing:-0.01em;
-  }
-  .subtitle{
-    font-size:.8rem;
-    color:#B9C7C1;
-    margin:0;
-  }
-  .hero{
-    margin-top:22px;
+    background:#83AD69;
+    padding:18px 0 22px;
     display:flex;
-    flex-direction:column;
-    gap:4px;
+    align-items:center;
+    justify-content:center;
   }
-  .hero .label{
-    font-size:.7rem;
-    text-transform:uppercase;
-    letter-spacing:.12em;
-    color:#8FB3A8;
+  header img{
+    width:56px;
+    height:56px;
+    border-radius:14px;
+    display:block;
+    box-shadow:0 4px 14px rgba(18,42,36,.25);
   }
-  .hero .value{
-    font-family:'IBM Plex Mono',monospace;
-    font-size:2.1rem;
-    font-weight:600;
-    letter-spacing:-0.02em;
-  }
-  .hero .value.neg{color:#FF9C7D;}
-  .hero .value.pos{color:var(--gold);}
-
-  .sparkline{
-    display:flex;
-    align-items:flex-end;
-    gap:3px;
-    height:34px;
-    margin-top:14px;
-  }
-  .sparkline .bar{
-    flex:1;
-    background:var(--teal);
-    border-radius:3px 3px 0 0;
-    min-height:2px;
-    opacity:.85;
-  }
-  .sparkline .bar.neg{background:var(--rust);}
 
   .tabs{
     display:flex;
     gap:8px;
     padding:0 12px;
-    margin-top:-30px;
+    margin-top:14px;
     position:relative;
     z-index:5;
   }
@@ -126,9 +76,29 @@
     margin-top:14px;
     padding:0 12px;
   }
-  .tab-panel.hero-panel{
-    margin-top:-38px;
+
+  .vigencia-banner{
+    background:var(--ink);
+    border-radius:14px;
+    padding:14px 18px;
+    margin-bottom:14px;
+    display:flex;
+    flex-direction:column;
+    gap:2px;
   }
+  .vigencia-banner .label{
+    font-size:.68rem;
+    text-transform:uppercase;
+    letter-spacing:.1em;
+    color:#8FB3A8;
+  }
+  .vigencia-banner .value{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:1.5rem;
+    font-weight:700;
+  }
+  .vigencia-banner .value.neg{color:#FF9C7D;}
+  .vigencia-banner .value.pos{color:var(--gold);}
 
   .resumo-title{
     font-family:'Fraunces',serif;
@@ -225,9 +195,15 @@
   }
   th,td{
     padding:0;
-    border-bottom:1px solid var(--line);
+    border-bottom:2px solid var(--line);
+    border-right:2px solid var(--line);
     white-space:nowrap;
   }
+  th:last-child, td:last-child{
+    border-right:none;
+  }
+  tbody tr:nth-child(odd) td{background:var(--paper-2);}
+  tbody tr.despesa:nth-of-type(even) td{background:#F8F6EF;}
   thead th{
     background:var(--paper);
     color:var(--muted);
@@ -310,13 +286,31 @@
   tr.saldo-mes-row input.val{font-weight:700;}
   tr.saldo-mes-row input.val.neg{color:var(--rust);}
   tr.saldo-mes-row input.val.pos{color:var(--teal);}
-  tr.saldo-acum-row td{background:#122A24;}
-  tr.saldo-acum-row input.val{color:var(--paper);font-weight:700;}
-  tr.saldo-acum-row input.val.neg{color:#FF9C7D;}
-  tr.saldo-acum-row input.val.pos{color:var(--gold);}
-  tr.saldo-acum-row .rowlabel{background:#122A24;color:var(--paper);}
-
   .add-row-wrap{padding:12px;}
+  .add-month-th{
+    min-width:56px;
+    text-align:center !important;
+  }
+  .btn-add-month{
+    background:var(--teal);
+    color:#fff;
+    border-radius:8px;
+    padding:6px 10px;
+    font-size:.85rem;
+  }
+  .add-month-filler{background:var(--paper);}
+  tr.add-despesa-row td{
+    padding:10px;
+    background:var(--paper-2);
+  }
+  .btn-add-row{
+    background:var(--ink);
+    color:var(--paper);
+    width:100%;
+    justify-content:center;
+    padding:10px;
+    border-radius:10px;
+  }
   .hint{
     font-size:.72rem;
     color:var(--muted);
@@ -349,13 +343,7 @@
 <body>
 
 <header>
-  <h1>Fluxo de Caixa</h1>
-  <p class="subtitle">Previsão pessoal &middot; edite qualquer valor, o resto recalcula sozinho</p>
-  <div class="hero">
-    <span class="label">Saldo acumulado ao final do período</span>
-    <span class="value" id="heroValue">R$ 0,00</span>
-  </div>
-  <div class="sparkline" id="sparkline"></div>
+  <img src="icon-192.png" alt="Home Finance">
 </header>
 
 <nav class="tabs">
@@ -369,16 +357,12 @@
     <div class="resumo-boxes" id="resumoBoxes"></div>
   </section>
 
-  <section id="tab-historico" class="tab-panel hero-panel" style="display:none">
+  <section id="tab-historico" class="tab-panel" style="display:none">
+    <div class="vigencia-banner">
+      <span class="label">Saldo do mês em vigência</span>
+      <span class="value" id="vigenciaValue">R$ 0,00</span>
+    </div>
     <div class="card">
-      <div class="toolbar">
-        <button class="btn-primary" id="addRowBtn">+ Adicionar despesa</button>
-        <button class="btn-ghost" id="addMonthBtn">+ Adicionar mês</button>
-        <button class="btn-ghost" id="exportBtn">Exportar backup</button>
-        <button class="btn-ghost" id="importBtn">Importar backup</button>
-        <button class="btn-danger-ghost" id="resetBtn">Restaurar padrão</button>
-        <input type="file" id="fileInput" accept="application/json" style="display:none">
-      </div>
       <div class="table-scroll">
         <table id="mainTable">
           <thead><tr id="headRow"><th>Categoria</th></tr></thead>
@@ -533,19 +517,21 @@ function render(){
   renderResumo();
   const n = data.months.length;
   const headRow = document.getElementById('headRow');
-  headRow.innerHTML = '<th>Categoria</th>' + data.months.map(m=>`<th>${m.label}</th>`).join('');
+  headRow.innerHTML = '<th>Categoria</th>' + data.months.map(m=>`<th>${m.label}</th>`).join('')
+    + `<th class="add-month-th"><button id="addMonthBtn" class="btn-add-month" title="Adicionar mês">+</button></th>`;
 
   const tbody = document.getElementById('tbody');
   let html = '';
+  const filler = `<td class="cell add-month-filler"></td>`;
 
   // Receita row
   html += `<tr class="receita" data-row="receita"><td class="rowlabel">Recebimento</td>`;
   for(let i=0;i<n;i++){
     html += `<td class="cell"><input class="val" data-type="receita" data-idx="${i}" value="${fmt(data.receita[i]||0)}"></td>`;
   }
-  html += `</tr>`;
+  html += filler + `</tr>`;
 
-  html += `<tr class="section-label"><td colspan="${n+1}">Despesas</td></tr>`;
+  html += `<tr class="section-label"><td colspan="${n+2}">Despesas</td></tr>`;
 
   data.despesas.forEach((d, di)=>{
     html += `<tr class="despesa" data-row="despesa" data-di="${di}">
@@ -556,44 +542,32 @@ function render(){
     for(let i=0;i<n;i++){
       html += `<td class="cell"><input class="val" data-type="despesa" data-di="${di}" data-idx="${i}" value="${fmt(d.valores[i]||0)}"></td>`;
     }
-    html += `</tr>`;
+    html += filler + `</tr>`;
   });
 
-  const {totalDespesas, saldoMes, saldoAcum} = computeTotals();
+  html += `<tr class="add-despesa-row"><td colspan="${n+2}"><button id="addRowBtn" class="btn-add-row">+ Adicionar despesa</button></td></tr>`;
+
+  const {totalDespesas, saldoMes} = computeTotals();
 
   html += `<tr class="total-row"><td class="rowlabel">Total de despesas</td>`;
   for(let i=0;i<n;i++){ html += `<td class="cell"><input class="val" readonly value="${fmt(totalDespesas[i])}"></td>`; }
-  html += `</tr>`;
+  html += filler + `</tr>`;
 
   html += `<tr class="saldo-mes-row"><td class="rowlabel">Saldo do mês</td>`;
   for(let i=0;i<n;i++){
     const cls = saldoMes[i] < 0 ? 'neg' : 'pos';
     html += `<td class="cell"><input class="val ${cls}" readonly value="${fmt(saldoMes[i])}"></td>`;
   }
-  html += `</tr>`;
-
-  html += `<tr class="saldo-acum-row"><td class="rowlabel">Saldo acumulado</td>`;
-  for(let i=0;i<n;i++){
-    const cls = saldoAcum[i] < 0 ? 'neg' : 'pos';
-    html += `<td class="cell"><input class="val ${cls}" readonly value="${fmt(saldoAcum[i])}"></td>`;
-  }
-  html += `</tr>`;
+  html += filler + `</tr>`;
 
   tbody.innerHTML = html;
 
-  // Hero + sparkline
-  const heroEl = document.getElementById('heroValue');
-  const last = saldoAcum[n-1];
-  heroEl.textContent = 'R$ ' + fmt(last);
-  heroEl.className = 'value ' + (last < 0 ? 'neg' : 'pos');
-
-  const spark = document.getElementById('sparkline');
-  const maxAbs = Math.max(1, ...saldoMes.map(v=>Math.abs(v)));
-  spark.innerHTML = saldoMes.map(v=>{
-    const h = Math.max(2, Math.round(Math.abs(v)/maxAbs*34));
-    const cls = v<0 ? 'neg' : '';
-    return `<div class="bar ${cls}" style="height:${h}px" title="${fmt(v)}"></div>`;
-  }).join('');
+  // Banner de saldo do mês em vigência
+  const idxVigencia = getCurrentMonthIndex();
+  const vigenciaEl = document.getElementById('vigenciaValue');
+  const valorVigencia = saldoMes[idxVigencia] || 0;
+  vigenciaEl.textContent = 'R$ ' + fmt(valorVigencia);
+  vigenciaEl.className = 'value ' + (valorVigencia < 0 ? 'neg' : 'pos');
 
   attachHandlers();
 }
@@ -627,6 +601,36 @@ function attachHandlers(){
       }
     });
   });
+
+  const addRowBtn = document.getElementById('addRowBtn');
+  if(addRowBtn){
+    addRowBtn.addEventListener('click', ()=>{
+      const n = data.months.length;
+      data.despesas.push({id:'custom-'+Date.now(), nome:'Nova despesa', valores:new Array(n).fill(0)});
+      saveData();
+      render();
+      const inputs = document.querySelectorAll('.row-name-input');
+      const last = inputs[inputs.length-1];
+      if(last){ last.focus(); last.select(); }
+    });
+  }
+
+  const addMonthBtn = document.getElementById('addMonthBtn');
+  if(addMonthBtn){
+    addMonthBtn.addEventListener('click', ()=>{
+      const lastMonth = data.months[data.months.length-1];
+      const [y,m] = lastMonth.key.split('-').map(Number);
+      let ny = y, nm = m+1;
+      if(nm > 12){ nm = 1; ny += 1; }
+      const labelsPt = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+      const label = `${labelsPt[nm-1]}/${String(ny).slice(2)}`;
+      data.months.push({key:`${ny}-${String(nm).padStart(2,'0')}`, label});
+      data.receita.push(0);
+      data.despesas.forEach(d=>d.valores.push(0));
+      saveData();
+      render();
+    });
+  }
 }
 
 function onValChange(){
@@ -643,65 +647,6 @@ function onValChange(){
   render();
 }
 
-document.getElementById('addRowBtn').addEventListener('click', ()=>{
-  const n = data.months.length;
-  data.despesas.push({id:'custom-'+Date.now(), nome:'Nova despesa', valores:new Array(n).fill(0)});
-  saveData();
-  render();
-  const inputs = document.querySelectorAll('.row-name-input');
-  const last = inputs[inputs.length-1];
-  if(last){ last.focus(); last.select(); }
-});
-
-document.getElementById('addMonthBtn').addEventListener('click', ()=>{
-  const lastMonth = data.months[data.months.length-1];
-  const [y,m] = lastMonth.key.split('-').map(Number);
-  let ny = y, nm = m+1;
-  if(nm > 12){ nm = 1; ny += 1; }
-  const labelsPt = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
-  const label = `${labelsPt[nm-1]}/${String(ny).slice(2)}`;
-  data.months.push({key:`${ny}-${String(nm).padStart(2,'0')}`, label});
-  data.receita.push(0);
-  data.despesas.forEach(d=>d.valores.push(0));
-  saveData();
-  render();
-});
-
-document.getElementById('exportBtn').addEventListener('click', ()=>{
-  const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'fluxo-de-caixa-backup.json';
-  a.click();
-  URL.revokeObjectURL(url);
-});
-
-document.getElementById('importBtn').addEventListener('click', ()=>{
-  document.getElementById('fileInput').click();
-});
-document.getElementById('fileInput').addEventListener('change', function(e){
-  const file = e.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = function(evt){
-    try{
-      const imported = JSON.parse(evt.target.result);
-      if(imported && imported.months && imported.despesas && imported.receita){
-        data = imported;
-        saveData();
-        render();
-      } else {
-        alert('Arquivo inválido.');
-      }
-    }catch(err){
-      alert('Não foi possível ler o arquivo.');
-    }
-  };
-  reader.readAsText(file);
-  this.value = '';
-});
-
 document.querySelectorAll('.tab-btn').forEach(btn=>{
   btn.addEventListener('click', function(){
     document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
@@ -710,14 +655,6 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     document.querySelectorAll('.tab-panel').forEach(p=>p.style.display='none');
     document.getElementById('tab-'+target).style.display = '';
   });
-});
-
-document.getElementById('resetBtn').addEventListener('click', ()=>{
-  if(confirm('Isso vai apagar todas as suas edições e voltar aos valores originais. Continuar?')){
-    data = JSON.parse(JSON.stringify(DEFAULT_DATA));
-    saveData();
-    render();
-  }
 });
 
 render();
