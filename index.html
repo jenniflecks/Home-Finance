@@ -97,9 +97,90 @@
   }
   .sparkline .bar.neg{background:var(--rust);}
 
-  main{
-    margin-top:-38px;
+  .tabs{
+    display:flex;
+    gap:8px;
     padding:0 12px;
+    margin-top:-30px;
+    position:relative;
+    z-index:5;
+  }
+  .tab-btn{
+    flex:1;
+    background:var(--paper-2);
+    color:var(--muted);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:12px 10px;
+    font-size:.8rem;
+    font-weight:600;
+    text-align:center;
+  }
+  .tab-btn.active{
+    background:var(--ink);
+    color:var(--paper);
+    border-color:var(--ink);
+  }
+
+  main{
+    margin-top:14px;
+    padding:0 12px;
+  }
+  .tab-panel.hero-panel{
+    margin-top:-38px;
+  }
+
+  .resumo-title{
+    font-family:'Fraunces',serif;
+    font-weight:700;
+    font-size:1.15rem;
+    color:var(--ink-2);
+    margin:4px 4px 14px;
+  }
+  .resumo-boxes{
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .resumo-box{
+    border-radius:14px;
+    padding:16px 18px;
+    display:flex;
+    flex-direction:column;
+    gap:3px;
+    box-shadow:0 6px 16px rgba(18,42,36,.08);
+  }
+  .resumo-box.pos{
+    background:#EAF7F1;
+    border:1px solid #BFE6D6;
+  }
+  .resumo-box.neg{
+    background:#FBEAE4;
+    border:1px solid #F0C3B4;
+  }
+  .rb-label{
+    font-size:.72rem;
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    font-weight:600;
+    color:var(--muted);
+  }
+  .rb-value{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:1.55rem;
+    font-weight:700;
+    letter-spacing:-0.01em;
+  }
+  .resumo-box.pos .rb-value{color:#1E7A5C;}
+  .resumo-box.neg .rb-value{color:var(--rust);}
+  .rb-sub{
+    font-size:.72rem;
+    color:var(--muted);
+  }
+  .rb-detail{
+    font-size:.72rem;
+    color:var(--muted);
+    margin-top:4px;
   }
   .card{
     background:var(--paper-2);
@@ -269,7 +350,7 @@
 
 <header>
   <h1>Fluxo de Caixa</h1>
-  <p class="subtitle">Previsão para os próximos meses</p>
+  <p class="subtitle">Previsão pessoal &middot; edite qualquer valor, o resto recalcula sozinho</p>
   <div class="hero">
     <span class="label">Saldo acumulado ao final do período</span>
     <span class="value" id="heroValue">R$ 0,00</span>
@@ -277,24 +358,36 @@
   <div class="sparkline" id="sparkline"></div>
 </header>
 
+<nav class="tabs">
+  <button class="tab-btn active" data-tab="resumo">Resumo Financeiro</button>
+  <button class="tab-btn" data-tab="historico">Histórico de Valores</button>
+</nav>
+
 <main>
-  <div class="card">
-    <div class="toolbar">
-      <button class="btn-primary" id="addRowBtn">+ Adicionar despesa</button>
-      <button class="btn-ghost" id="addMonthBtn">+ Adicionar mês</button>
-      <button class="btn-ghost" id="exportBtn">Exportar backup</button>
-      <button class="btn-ghost" id="importBtn">Importar backup</button>
-      <button class="btn-danger-ghost" id="resetBtn">Restaurar padrão</button>
-      <input type="file" id="fileInput" accept="application/json" style="display:none">
+  <section id="tab-resumo" class="tab-panel">
+    <h2 class="resumo-title">Saldo Disponível para Uso</h2>
+    <div class="resumo-boxes" id="resumoBoxes"></div>
+  </section>
+
+  <section id="tab-historico" class="tab-panel hero-panel" style="display:none">
+    <div class="card">
+      <div class="toolbar">
+        <button class="btn-primary" id="addRowBtn">+ Adicionar despesa</button>
+        <button class="btn-ghost" id="addMonthBtn">+ Adicionar mês</button>
+        <button class="btn-ghost" id="exportBtn">Exportar backup</button>
+        <button class="btn-ghost" id="importBtn">Importar backup</button>
+        <button class="btn-danger-ghost" id="resetBtn">Restaurar padrão</button>
+        <input type="file" id="fileInput" accept="application/json" style="display:none">
+      </div>
+      <div class="table-scroll">
+        <table id="mainTable">
+          <thead><tr id="headRow"><th>Categoria</th></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
     </div>
-    <div class="table-scroll">
-      <table id="mainTable">
-        <thead><tr id="headRow"><th>Categoria</th></tr></thead>
-        <tbody id="tbody"></tbody>
-      </table>
-    </div>
-  </div>
-  <p class="hint">Toque em qualquer célula para editar. Use vírgula ou ponto para decimais. Toque no nome de uma despesa pra renomear. Os dados ficam salvos neste aparelho automaticamente.</p>
+    <p class="hint">Toque em qualquer célula para editar. Use vírgula ou ponto para decimais. Toque no nome de uma despesa pra renomear. Os dados ficam salvos neste aparelho automaticamente.</p>
+  </section>
 </main>
 
 <footer>Fluxo de Caixa &middot; funciona offline &middot; seus dados não saem deste aparelho</footer>
@@ -387,7 +480,57 @@ function computeTotals(){
   return {totalDespesas, saldoMes, saldoAcum};
 }
 
+const LIMITES_CARTAO = {
+  jenni: 400,
+  sicredi: 2800,
+};
+
+function getCurrentMonthIndex(){
+  const now = new Date();
+  const key = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  let idx = data.months.findIndex(m => m.key === key);
+  if(idx === -1) idx = 0;
+  return idx;
+}
+
+function cartaoBoxHtml(nome, gasto, limite){
+  const restante = limite - gasto;
+  const cls = restante < 0 ? 'neg' : 'pos';
+  return `<div class="resumo-box ${cls}">
+    <span class="rb-label">${nome}</span>
+    <span class="rb-value">R$ ${fmt(restante)}</span>
+    <span class="rb-sub">${restante < 0 ? 'limite estourado' : 'restante do limite'}</span>
+    <span class="rb-detail">R$ ${fmt(gasto)} usado de R$ ${fmt(limite)}</span>
+  </div>`;
+}
+
+function saldoBoxHtml(nome, saldo){
+  const cls = saldo < 0 ? 'neg' : 'pos';
+  return `<div class="resumo-box ${cls}">
+    <span class="rb-label">${nome}</span>
+    <span class="rb-value">R$ ${fmt(saldo)}</span>
+    <span class="rb-sub">${saldo < 0 ? 'déficit no mês' : 'sobra no mês'}</span>
+  </div>`;
+}
+
+function renderResumo(){
+  const idx = getCurrentMonthIndex();
+  const {saldoMes} = computeTotals();
+
+  const jenni = data.despesas.find(d => d.id === 'jenni');
+  const sicredi = data.despesas.find(d => d.id === 'sicredi');
+  const jenniGasto = (jenni && jenni.valores[idx]) || 0;
+  const sicrediGasto = (sicredi && sicredi.valores[idx]) || 0;
+
+  const boxesEl = document.getElementById('resumoBoxes');
+  boxesEl.innerHTML =
+    cartaoBoxHtml('Cartão Nubank Jenni', jenniGasto, LIMITES_CARTAO.jenni) +
+    cartaoBoxHtml('Cartão Sicredi', sicrediGasto, LIMITES_CARTAO.sicredi) +
+    saldoBoxHtml('Saldo do Mês', saldoMes[idx] || 0);
+}
+
 function render(){
+  renderResumo();
   const n = data.months.length;
   const headRow = document.getElementById('headRow');
   headRow.innerHTML = '<th>Categoria</th>' + data.months.map(m=>`<th>${m.label}</th>`).join('');
@@ -557,6 +700,16 @@ document.getElementById('fileInput').addEventListener('change', function(e){
   };
   reader.readAsText(file);
   this.value = '';
+});
+
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', function(){
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    this.classList.add('active');
+    const target = this.dataset.tab;
+    document.querySelectorAll('.tab-panel').forEach(p=>p.style.display='none');
+    document.getElementById('tab-'+target).style.display = '';
+  });
 });
 
 document.getElementById('resetBtn').addEventListener('click', ()=>{
