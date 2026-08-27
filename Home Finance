@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fluxo de Caixa</title>
+<meta name="theme-color" content="#122A24">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#122A24;
+    --ink-2:#1B3D34;
+    --paper:#F4F2EC;
+    --paper-2:#FFFFFF;
+    --line:#DAD5C7;
+    --gold:#F2C879;
+    --teal:#2FA98C;
+    --rust:#C2492E;
+    --muted:#6B7570;
+    --text:#1A231F;
+    font-family:'Inter',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--text);
+    padding-bottom:80px;
+  }
+  header{
+    background:var(--ink);
+    color:var(--paper);
+    padding:22px 18px 60px;
+    position:relative;
+    overflow:hidden;
+  }
+  header::after{
+    content:"";
+    position:absolute;
+    right:-40px; top:-40px;
+    width:160px; height:160px;
+    border-radius:50%;
+    background:radial-gradient(circle at 30% 30%, var(--teal) 0%, transparent 70%);
+    opacity:.35;
+  }
+  h1{
+    font-family:'Fraunces',serif;
+    font-weight:700;
+    font-size:1.5rem;
+    margin:0 0 4px;
+    letter-spacing:-0.01em;
+  }
+  .subtitle{
+    font-size:.8rem;
+    color:#B9C7C1;
+    margin:0;
+  }
+  .hero{
+    margin-top:22px;
+    display:flex;
+    flex-direction:column;
+    gap:4px;
+  }
+  .hero .label{
+    font-size:.7rem;
+    text-transform:uppercase;
+    letter-spacing:.12em;
+    color:#8FB3A8;
+  }
+  .hero .value{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:2.1rem;
+    font-weight:600;
+    letter-spacing:-0.02em;
+  }
+  .hero .value.neg{color:#FF9C7D;}
+  .hero .value.pos{color:var(--gold);}
+
+  .sparkline{
+    display:flex;
+    align-items:flex-end;
+    gap:3px;
+    height:34px;
+    margin-top:14px;
+  }
+  .sparkline .bar{
+    flex:1;
+    background:var(--teal);
+    border-radius:3px 3px 0 0;
+    min-height:2px;
+    opacity:.85;
+  }
+  .sparkline .bar.neg{background:var(--rust);}
+
+  main{
+    margin-top:-38px;
+    padding:0 12px;
+  }
+  .card{
+    background:var(--paper-2);
+    border-radius:16px;
+    box-shadow:0 8px 24px rgba(18,42,36,.12);
+    overflow:hidden;
+    margin-bottom:16px;
+  }
+  .toolbar{
+    display:flex;
+    gap:8px;
+    padding:12px;
+    flex-wrap:wrap;
+    background:var(--paper-2);
+    border-bottom:1px solid var(--line);
+  }
+  button{
+    font-family:'Inter',sans-serif;
+    font-size:.78rem;
+    font-weight:600;
+    border:none;
+    border-radius:9px;
+    padding:9px 12px;
+    cursor:pointer;
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+  }
+  .btn-primary{background:var(--ink);color:var(--paper);}
+  .btn-ghost{background:var(--paper);color:var(--ink-2);border:1px solid var(--line);}
+  .btn-danger-ghost{background:#FBEAE4;color:var(--rust);}
+  button:active{transform:scale(.97);}
+
+  .table-scroll{
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+  }
+  table{
+    border-collapse:collapse;
+    width:100%;
+    font-size:.82rem;
+  }
+  th,td{
+    padding:0;
+    border-bottom:1px solid var(--line);
+    white-space:nowrap;
+  }
+  thead th{
+    background:var(--paper);
+    color:var(--muted);
+    font-size:.68rem;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    font-weight:600;
+    padding:10px 10px;
+    text-align:right;
+    position:sticky;
+    top:0;
+  }
+  thead th:first-child, td.rowlabel{
+    position:sticky;
+    left:0;
+    z-index:2;
+    background:var(--paper-2);
+    text-align:left;
+    box-shadow:2px 0 4px rgba(0,0,0,.04);
+  }
+  thead th:first-child{background:var(--paper);z-index:3;}
+
+  td.rowlabel{
+    padding:6px 8px;
+    min-width:168px;
+  }
+  .row-name-input{
+    border:none;
+    background:transparent;
+    font-size:.82rem;
+    font-family:'Inter',sans-serif;
+    width:100%;
+    padding:6px 2px;
+    color:var(--text);
+  }
+  .row-name-input:focus{outline:none;background:#FFF7E6;border-radius:6px;}
+
+  td.cell{
+    padding:4px 4px;
+    text-align:right;
+    min-width:88px;
+  }
+  input.val{
+    width:100%;
+    text-align:right;
+    border:1px solid transparent;
+    background:transparent;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.82rem;
+    padding:8px 6px;
+    border-radius:8px;
+    color:var(--text);
+  }
+  input.val:focus{
+    outline:none;
+    border-color:var(--teal);
+    background:#F1FAF7;
+  }
+  tr.receita td{background:#FCF7EA;}
+  tr.receita input.val{color:#8A6A1E;font-weight:600;}
+  tr.section-label td{
+    padding:10px 10px;
+    background:var(--ink);
+    color:var(--paper);
+    font-size:.68rem;
+    text-transform:uppercase;
+    letter-spacing:.1em;
+    font-weight:600;
+  }
+  tr.despesa .rowlabel{display:flex;align-items:center;gap:4px;}
+  .del-btn{
+    background:none;border:none;color:#C7BFAE;font-size:1rem;
+    padding:2px 4px;cursor:pointer;line-height:1;flex-shrink:0;
+  }
+  .del-btn:hover{color:var(--rust);}
+
+  tr.total-row td{background:#EFEBDD;font-weight:600;}
+  tr.total-row input.val{font-weight:700;color:var(--ink-2);}
+  tr.saldo-mes-row td{background:var(--paper-2);}
+  tr.saldo-mes-row input.val{font-weight:700;}
+  tr.saldo-mes-row input.val.neg{color:var(--rust);}
+  tr.saldo-mes-row input.val.pos{color:var(--teal);}
+  tr.saldo-acum-row td{background:#122A24;}
+  tr.saldo-acum-row input.val{color:var(--paper);font-weight:700;}
+  tr.saldo-acum-row input.val.neg{color:#FF9C7D;}
+  tr.saldo-acum-row input.val.pos{color:var(--gold);}
+  tr.saldo-acum-row .rowlabel{background:#122A24;color:var(--paper);}
+
+  .add-row-wrap{padding:12px;}
+  .hint{
+    font-size:.72rem;
+    color:var(--muted);
+    padding:0 14px 14px;
+    line-height:1.5;
+  }
+  footer{
+    text-align:center;
+    font-size:.68rem;
+    color:var(--muted);
+    padding:10px 20px 30px;
+  }
+  .toast{
+    position:fixed;
+    bottom:20px;left:50%;
+    transform:translateX(-50%) translateY(20px);
+    background:var(--ink);
+    color:var(--paper);
+    padding:10px 18px;
+    border-radius:20px;
+    font-size:.8rem;
+    opacity:0;
+    transition:all .25s ease;
+    pointer-events:none;
+    z-index:50;
+  }
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Fluxo de Caixa</h1>
+  <p class="subtitle">Previsão pessoal &middot; edite qualquer valor, o resto recalcula sozinho</p>
+  <div class="hero">
+    <span class="label">Saldo acumulado ao final do período</span>
+    <span class="value" id="heroValue">R$ 0,00</span>
+  </div>
+  <div class="sparkline" id="sparkline"></div>
+</header>
+
+<main>
+  <div class="card">
+    <div class="toolbar">
+      <button class="btn-primary" id="addRowBtn">+ Adicionar despesa</button>
+      <button class="btn-ghost" id="addMonthBtn">+ Adicionar mês</button>
+      <button class="btn-ghost" id="exportBtn">Exportar backup</button>
+      <button class="btn-ghost" id="importBtn">Importar backup</button>
+      <button class="btn-danger-ghost" id="resetBtn">Restaurar padrão</button>
+      <input type="file" id="fileInput" accept="application/json" style="display:none">
+    </div>
+    <div class="table-scroll">
+      <table id="mainTable">
+        <thead><tr id="headRow"><th>Categoria</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+  <p class="hint">Toque em qualquer célula para editar. Use vírgula ou ponto para decimais. Toque no nome de uma despesa pra renomear. Os dados ficam salvos neste aparelho automaticamente.</p>
+</main>
+
+<footer>Fluxo de Caixa &middot; funciona offline &middot; seus dados não saem deste aparelho</footer>
+<div class="toast" id="toast"></div>
+
+<script>
+const STORAGE_KEY = 'fluxo-caixa-data-v1';
+
+const DEFAULT_DATA = {
+  months: [
+    {key:'2026-09', label:'Set/26'},
+    {key:'2026-10', label:'Out/26'},
+    {key:'2026-11', label:'Nov/26'},
+    {key:'2026-12', label:'Dez/26'},
+    {key:'2027-01', label:'Jan/27'},
+    {key:'2027-02', label:'Fev/27'},
+    {key:'2027-03', label:'Mar/27'},
+    {key:'2027-04', label:'Abr/27'},
+    {key:'2027-05', label:'Mai/27'},
+    {key:'2027-06', label:'Jun/27'},
+  ],
+  receita: [7678,7727,7727,13932,11084,0,0,0,0,0],
+  despesas: [
+    {id:'aluguel', nome:'Aluguel', valores:[1619.38,1463,1463,1463,1463,1463,1463,1463,1463,1463]},
+    {id:'internet', nome:'Internet', valores:[159.90,159.90,159.90,159.90,159.90,159.90,159.90,159.90,159.90,159.90]},
+    {id:'tv', nome:'TV', valores:[35,35,35,35,35,35,35,35,35,35]},
+    {id:'mano', nome:'Mano', valores:[140,0,0,0,0,0,0,0,0,0]},
+    {id:'consorcio', nome:'Consórcio', valores:[1181.85,1181.85,1181.85,1181.85,1181.85,1181.85,1181.85,1181.85,1181.85,1181.85]},
+    {id:'sicredi', nome:'Cartão Sicredi', valores:[4230.90,758.57,124.10,124.10,124.10,124.10,50.80,50.80,50.80,50.80]},
+    {id:'cheque', nome:'Cheque especial', valores:[863.29,0,0,0,0,0,0,0,0,0]},
+    {id:'marcos', nome:'Cartão Nubank Marcos', valores:[599.26,497.26,497.26,262.36,262.36,0,0,0,0,0]},
+    {id:'jenni', nome:'Cartão Nubank Jenni', valores:[841.32,541.20,396.10,207.99,207.99,207.99,207.99,207.99,64.89,64.89]},
+    {id:'luz', nome:'Luz', valores:[0,280,280,280,280,280,280,280,280,280]},
+    {id:'emprestimo', nome:'Empréstimo', valores:[546.73,546.73,546.73,546.73,546.73,546.73,546.73,546.73,546.73,0]},
+  ]
+};
+
+let data = loadData();
+
+function loadData(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return JSON.parse(JSON.stringify(DEFAULT_DATA));
+}
+function saveData(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  showToast('Salvo');
+}
+let toastTimer=null;
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 900);
+}
+
+function fmt(n){
+  if(isNaN(n)) n = 0;
+  return n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function parseVal(str){
+  if(typeof str === 'number') return str;
+  if(!str) return 0;
+  str = str.toString().trim().replace(/\s/g,'');
+  if(str === '') return 0;
+  // handle "1.234,56" and "1234.56" and "1234,56"
+  if(str.includes(',') && str.includes('.')){
+    str = str.replace(/\./g,'').replace(',', '.');
+  } else if(str.includes(',')){
+    str = str.replace(',', '.');
+  }
+  const n = parseFloat(str);
+  return isNaN(n) ? 0 : n;
+}
+
+function computeTotals(){
+  const n = data.months.length;
+  const totalDespesas = new Array(n).fill(0);
+  data.despesas.forEach(d=>{
+    for(let i=0;i<n;i++){ totalDespesas[i] += (d.valores[i]||0); }
+  });
+  const saldoMes = new Array(n).fill(0);
+  for(let i=0;i<n;i++){ saldoMes[i] = (data.receita[i]||0) - totalDespesas[i]; }
+  const saldoAcum = new Array(n).fill(0);
+  let acc = 0;
+  for(let i=0;i<n;i++){ acc += saldoMes[i]; saldoAcum[i] = acc; }
+  return {totalDespesas, saldoMes, saldoAcum};
+}
+
+function render(){
+  const n = data.months.length;
+  const headRow = document.getElementById('headRow');
+  headRow.innerHTML = '<th>Categoria</th>' + data.months.map(m=>`<th>${m.label}</th>`).join('');
+
+  const tbody = document.getElementById('tbody');
+  let html = '';
+
+  // Receita row
+  html += `<tr class="receita" data-row="receita"><td class="rowlabel">Recebimento</td>`;
+  for(let i=0;i<n;i++){
+    html += `<td class="cell"><input class="val" data-type="receita" data-idx="${i}" value="${fmt(data.receita[i]||0)}"></td>`;
+  }
+  html += `</tr>`;
+
+  html += `<tr class="section-label"><td colspan="${n+1}">Despesas</td></tr>`;
+
+  data.despesas.forEach((d, di)=>{
+    html += `<tr class="despesa" data-row="despesa" data-di="${di}">
+      <td class="rowlabel">
+        <input class="row-name-input" data-di="${di}" value="${escapeHtml(d.nome)}">
+        <button class="del-btn" data-del="${di}" title="Remover linha">✕</button>
+      </td>`;
+    for(let i=0;i<n;i++){
+      html += `<td class="cell"><input class="val" data-type="despesa" data-di="${di}" data-idx="${i}" value="${fmt(d.valores[i]||0)}"></td>`;
+    }
+    html += `</tr>`;
+  });
+
+  const {totalDespesas, saldoMes, saldoAcum} = computeTotals();
+
+  html += `<tr class="total-row"><td class="rowlabel">Total de despesas</td>`;
+  for(let i=0;i<n;i++){ html += `<td class="cell"><input class="val" readonly value="${fmt(totalDespesas[i])}"></td>`; }
+  html += `</tr>`;
+
+  html += `<tr class="saldo-mes-row"><td class="rowlabel">Saldo do mês</td>`;
+  for(let i=0;i<n;i++){
+    const cls = saldoMes[i] < 0 ? 'neg' : 'pos';
+    html += `<td class="cell"><input class="val ${cls}" readonly value="${fmt(saldoMes[i])}"></td>`;
+  }
+  html += `</tr>`;
+
+  html += `<tr class="saldo-acum-row"><td class="rowlabel">Saldo acumulado</td>`;
+  for(let i=0;i<n;i++){
+    const cls = saldoAcum[i] < 0 ? 'neg' : 'pos';
+    html += `<td class="cell"><input class="val ${cls}" readonly value="${fmt(saldoAcum[i])}"></td>`;
+  }
+  html += `</tr>`;
+
+  tbody.innerHTML = html;
+
+  // Hero + sparkline
+  const heroEl = document.getElementById('heroValue');
+  const last = saldoAcum[n-1];
+  heroEl.textContent = 'R$ ' + fmt(last);
+  heroEl.className = 'value ' + (last < 0 ? 'neg' : 'pos');
+
+  const spark = document.getElementById('sparkline');
+  const maxAbs = Math.max(1, ...saldoMes.map(v=>Math.abs(v)));
+  spark.innerHTML = saldoMes.map(v=>{
+    const h = Math.max(2, Math.round(Math.abs(v)/maxAbs*34));
+    const cls = v<0 ? 'neg' : '';
+    return `<div class="bar ${cls}" style="height:${h}px" title="${fmt(v)}"></div>`;
+  }).join('');
+
+  attachHandlers();
+}
+
+function escapeHtml(s){
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+function attachHandlers(){
+  document.querySelectorAll('input.val[data-type]').forEach(inp=>{
+    inp.addEventListener('change', onValChange);
+    inp.addEventListener('focus', function(){ this.select(); });
+  });
+  document.querySelectorAll('.row-name-input').forEach(inp=>{
+    inp.addEventListener('change', function(){
+      const di = parseInt(this.dataset.di);
+      data.despesas[di].nome = this.value || 'Sem nome';
+      saveData();
+    });
+  });
+  document.querySelectorAll('.del-btn').forEach(btn=>{
+    btn.addEventListener('click', function(){
+      const di = parseInt(this.dataset.del);
+      const nome = data.despesas[di].nome;
+      if(confirm(`Remover a linha "${nome}"?`)){
+        data.despesas.splice(di,1);
+        saveData();
+        render();
+      }
+    });
+  });
+}
+
+function onValChange(){
+  const type = this.dataset.type;
+  const idx = parseInt(this.dataset.idx);
+  const v = parseVal(this.value);
+  if(type === 'receita'){
+    data.receita[idx] = v;
+  } else if(type === 'despesa'){
+    const di = parseInt(this.dataset.di);
+    data.despesas[di].valores[idx] = v;
+  }
+  saveData();
+  render();
+}
+
+document.getElementById('addRowBtn').addEventListener('click', ()=>{
+  const n = data.months.length;
+  data.despesas.push({id:'custom-'+Date.now(), nome:'Nova despesa', valores:new Array(n).fill(0)});
+  saveData();
+  render();
+  const inputs = document.querySelectorAll('.row-name-input');
+  const last = inputs[inputs.length-1];
+  if(last){ last.focus(); last.select(); }
+});
+
+document.getElementById('addMonthBtn').addEventListener('click', ()=>{
+  const lastMonth = data.months[data.months.length-1];
+  const [y,m] = lastMonth.key.split('-').map(Number);
+  let ny = y, nm = m+1;
+  if(nm > 12){ nm = 1; ny += 1; }
+  const labelsPt = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  const label = `${labelsPt[nm-1]}/${String(ny).slice(2)}`;
+  data.months.push({key:`${ny}-${String(nm).padStart(2,'0')}`, label});
+  data.receita.push(0);
+  data.despesas.forEach(d=>d.valores.push(0));
+  saveData();
+  render();
+});
+
+document.getElementById('exportBtn').addEventListener('click', ()=>{
+  const blob = new Blob([JSON.stringify(data,null,2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'fluxo-de-caixa-backup.json';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+document.getElementById('importBtn').addEventListener('click', ()=>{
+  document.getElementById('fileInput').click();
+});
+document.getElementById('fileInput').addEventListener('change', function(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(evt){
+    try{
+      const imported = JSON.parse(evt.target.result);
+      if(imported && imported.months && imported.despesas && imported.receita){
+        data = imported;
+        saveData();
+        render();
+      } else {
+        alert('Arquivo inválido.');
+      }
+    }catch(err){
+      alert('Não foi possível ler o arquivo.');
+    }
+  };
+  reader.readAsText(file);
+  this.value = '';
+});
+
+document.getElementById('resetBtn').addEventListener('click', ()=>{
+  if(confirm('Isso vai apagar todas as suas edições e voltar aos valores originais. Continuar?')){
+    data = JSON.parse(JSON.stringify(DEFAULT_DATA));
+    saveData();
+    render();
+  }
+});
+
+render();
+
+if('serviceWorker' in navigator){
+  window.addEventListener('load', ()=>{
+    navigator.serviceWorker.register('service-worker.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
