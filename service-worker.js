@@ -1,10 +1,11 @@
-const CACHE_NAME = 'fluxo-caixa-v1';
+const CACHE_NAME = 'fluxo-caixa-v2';
 const ASSETS = [
   './',
   './index.html',
   './manifest.json',
   './icon-192.png',
-  './icon-512.png'
+  './icon-512.png',
+  './firebase-config.js'
 ];
 
 self.addEventListener('install', (event) => {
