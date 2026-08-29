@@ -882,7 +882,19 @@ initFirebase();
 
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
-    navigator.serviceWorker.register('service-worker.js').catch(()=>{});
+    navigator.serviceWorker.register('service-worker.js', {updateViaCache: 'none'}).then(reg=>{
+      // Checa se já tem uma versão nova esperando pra assumir
+      reg.update().catch(()=>{});
+    }).catch(()=>{});
+  });
+
+  // Quando o novo service worker assume o controle, recarrega a página
+  // uma vez sozinho para aplicar a atualização na hora.
+  let jaRecarregou = false;
+  navigator.serviceWorker.addEventListener('controllerchange', ()=>{
+    if(jaRecarregou) return;
+    jaRecarregou = true;
+    window.location.reload();
   });
 }
 </script>
