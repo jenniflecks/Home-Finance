@@ -123,8 +123,14 @@
     font-weight:700;
     font-size:1.15rem;
     color:var(--text);
-    margin:4px 4px 14px;
+    margin:4px 4px 2px;
   }
+  .resumo-mes{
+  font-size:.78rem;
+  color:var(--muted);
+  margin:0 4px 14px;
+  text-transform:capitalize;
+}
   .resumo-boxes{
     display:flex;
     flex-direction:column;
@@ -439,6 +445,7 @@
 <main>
   <section id="tab-resumo" class="tab-panel">
     <h2 class="resumo-title">Saldo Disponível para Uso</h2>
+    <p class="resumo-mes" id="resumoMes"></p>
     <div class="resumo-boxes" id="resumoBoxes"></div>
   </section>
 
@@ -607,6 +614,10 @@ function renderResumo(){
   const idx = getCurrentMonthIndex();
   const {saldoMes} = computeTotals();
 
+  const mesEl = document.getElementById('resumoMes');
+  if(mesEl){
+    mesEl.textContent = `Mês em vigência: ${data.months[idx].label}`;
+  }
   const jenni = data.despesas.find(d => d.id === 'jenni');
   const sicredi = data.despesas.find(d => d.id === 'sicredi');
   const jenniGasto = (jenni && jenni.valores[idx]) || 0;
