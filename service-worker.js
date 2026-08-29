@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fluxo-caixa-v2';
+const CACHE_NAME = 'fluxo-caixa-v3';
 const ASSETS = [
   './',
   './index.html',
@@ -26,19 +26,16 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
+// Estratégia: busca sempre a versão mais nova na rede primeiro.
+// Só usa o que está guardado no aparelho se estiver sem internet.
 self.addEventListener('fetch', (event) => {
   event.respondWith(
-    caches.match(event.request).then((cached) => {
-      return (
-        cached ||
-        fetch(event.request)
-          .then((response) => {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-            return response;
-          })
-          .catch(() => cached)
-      );
-    })
+    fetch(event.request)
+      .then((response) => {
+        const clone = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        return response;
+      })
+      .catch(() => caches.match(event.request))
   );
 });
