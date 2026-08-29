@@ -1,12 +1,12 @@
 {
-  "name": "Fluxo de Caixa",
-  "short_name": "Fluxo",
+  "name": "Home Finance",
+  "short_name": "Home Finance",
   "description": "Previsão pessoal de fluxo de caixa mensal",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#F4F2EC",
-  "theme_color": "#122A24",
+  "background_color": "#83AD69",
+  "theme_color": "#83AD69",
   "orientation": "portrait-primary",
   "icons": [
     {
