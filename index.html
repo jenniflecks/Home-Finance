@@ -13,21 +13,26 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
+    --bg:#0A0F0D;
+    --bg-elev:#141B17;
+    --bg-elev-2:#1D2620;
+    --line:#263029;
     --ink:#122A24;
     --ink-2:#1B3D34;
     --paper:#F4F2EC;
     --paper-2:#FFFFFF;
-    --line:#DAD5C7;
     --gold:#F2C879;
     --teal:#2FA98C;
+    --green:#3ECF8E;
+    --green-dim:#163B2C;
     --rust:#C2492E;
-    --muted:#6B7570;
-    --text:#1A231F;
+    --muted:#8B978F;
+    --text:#EAF3EE;
     --tbl-bg:#000000;
-    --tbl-bg-alt:#171717;
-    --tbl-line:#333333;
+    --tbl-bg-alt:#10140F;
+    --tbl-line:#24302B;
     --tbl-text:#FFFFFF;
-    --tbl-muted:#9AA39D;
+    --tbl-muted:#8FA79B;
     --pos:#3ECF8E;
     --neg:#FF5C5C;
     font-family:'Inter',system-ui,sans-serif;
@@ -35,7 +40,7 @@
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
   body{
     margin:0;
-    background:var(--paper);
+    background:radial-gradient(ellipse 900px 500px at 50% -80px, #163325 0%, var(--bg) 55%) var(--bg);
     color:var(--text);
     padding-bottom:80px;
   }
@@ -45,13 +50,14 @@
     display:flex;
     align-items:center;
     justify-content:center;
+    box-shadow:0 4px 20px rgba(0,0,0,.35);
   }
   header img{
     width:56px;
     height:56px;
     border-radius:14px;
     display:block;
-    box-shadow:0 4px 14px rgba(18,42,36,.25);
+    box-shadow:0 4px 14px rgba(0,0,0,.35);
   }
 
   .tabs{
@@ -64,7 +70,7 @@
   }
   .tab-btn{
     flex:1;
-    background:var(--paper-2);
+    background:var(--bg-elev);
     color:var(--muted);
     border:1px solid var(--line);
     border-radius:12px;
@@ -74,9 +80,10 @@
     text-align:center;
   }
   .tab-btn.active{
-    background:var(--ink);
-    color:var(--paper);
-    border-color:var(--ink);
+    background:var(--green);
+    color:#04140D;
+    border-color:var(--green);
+    box-shadow:0 4px 16px rgba(62,207,142,.25);
   }
 
   main{
@@ -85,7 +92,9 @@
   }
 
   .vigencia-banner{
-    background:var(--ink);
+    background:var(--bg-elev);
+    border:1px solid var(--line);
+    border-left:4px solid var(--green);
     border-radius:14px;
     padding:14px 18px;
     margin-bottom:14px;
@@ -97,21 +106,22 @@
     font-size:.68rem;
     text-transform:uppercase;
     letter-spacing:.1em;
-    color:#8FB3A8;
+    color:var(--muted);
   }
   .vigencia-banner .value{
     font-family:'IBM Plex Mono',monospace;
     font-size:1.5rem;
     font-weight:700;
+    color:var(--text);
   }
-  .vigencia-banner .value.neg{color:#FF9C7D;}
-  .vigencia-banner .value.pos{color:var(--gold);}
+  .vigencia-banner .value.neg{color:var(--neg);}
+  .vigencia-banner .value.pos{color:var(--pos);}
 
   .resumo-title{
     font-family:'Fraunces',serif;
     font-weight:700;
     font-size:1.15rem;
-    color:var(--ink-2);
+    color:var(--text);
     margin:4px 4px 14px;
   }
   .resumo-boxes{
@@ -125,15 +135,15 @@
     display:flex;
     flex-direction:column;
     gap:3px;
-    box-shadow:0 6px 16px rgba(18,42,36,.08);
+    background:var(--bg-elev);
+    border:1px solid var(--line);
+    box-shadow:0 6px 16px rgba(0,0,0,.25);
   }
   .resumo-box.pos{
-    background:#EAF7F1;
-    border:1px solid #BFE6D6;
+    border-color:rgba(62,207,142,.45);
   }
   .resumo-box.neg{
-    background:#FBEAE4;
-    border:1px solid #F0C3B4;
+    border-color:rgba(255,92,92,.45);
   }
   .rb-label{
     font-size:.72rem;
@@ -148,8 +158,8 @@
     font-weight:700;
     letter-spacing:-0.01em;
   }
-  .resumo-box.pos .rb-value{color:#1E7A5C;}
-  .resumo-box.neg .rb-value{color:var(--rust);}
+  .resumo-box.pos .rb-value{color:var(--pos);}
+  .resumo-box.neg .rb-value{color:var(--neg);}
   .rb-sub{
     font-size:.72rem;
     color:var(--muted);
@@ -160,9 +170,10 @@
     margin-top:4px;
   }
   .card{
-    background:var(--paper-2);
+    background:var(--tbl-bg);
     border-radius:16px;
-    box-shadow:0 8px 24px rgba(18,42,36,.12);
+    border:1px solid var(--line);
+    box-shadow:0 8px 28px rgba(0,0,0,.4);
     overflow:hidden;
     margin-bottom:16px;
   }
@@ -171,7 +182,7 @@
     gap:8px;
     padding:12px;
     flex-wrap:wrap;
-    background:var(--paper-2);
+    background:var(--bg-elev);
     border-bottom:1px solid var(--line);
   }
   button{
@@ -186,9 +197,9 @@
     align-items:center;
     gap:6px;
   }
-  .btn-primary{background:var(--ink);color:var(--paper);}
-  .btn-ghost{background:var(--paper);color:var(--ink-2);border:1px solid var(--line);}
-  .btn-danger-ghost{background:#FBEAE4;color:var(--rust);}
+  .btn-primary{background:var(--green);color:#04140D;}
+  .btn-ghost{background:var(--bg-elev-2);color:var(--text);border:1px solid var(--line);}
+  .btn-danger-ghost{background:rgba(255,92,92,.12);color:var(--neg);}
   button:active{transform:scale(.97);}
 
   .table-scroll{
@@ -202,18 +213,18 @@
   }
   th,td{
     padding:0;
-    border-bottom:2px solid var(--line);
-    border-right:2px solid var(--line);
+    border-bottom:2px solid var(--tbl-line);
+    border-right:2px solid var(--tbl-line);
     white-space:nowrap;
   }
   th:last-child, td:last-child{
     border-right:none;
   }
-  tbody tr:nth-child(odd) td{background:var(--paper-2);}
-  tbody tr.despesa:nth-of-type(even) td{background:#F8F6EF;}
+  tbody tr td{background:var(--tbl-bg);}
+  tbody tr.despesa:nth-of-type(even) td{background:var(--tbl-bg-alt);}
   thead th{
-    background:var(--paper);
-    color:var(--muted);
+    background:var(--tbl-bg);
+    color:var(--tbl-muted);
     font-size:.68rem;
     text-transform:uppercase;
     letter-spacing:.06em;
@@ -227,11 +238,11 @@
     position:sticky;
     left:0;
     z-index:2;
-    background:var(--paper-2);
+    background:var(--tbl-bg);
     text-align:left;
-    box-shadow:2px 0 4px rgba(0,0,0,.04);
+    box-shadow:2px 0 4px rgba(0,0,0,.35);
   }
-  thead th:first-child{background:var(--paper);z-index:3;}
+  thead th:first-child{background:var(--tbl-bg);z-index:3;}
 
   td.rowlabel{
     padding:6px 8px;
@@ -244,9 +255,9 @@
     font-family:'Inter',sans-serif;
     width:100%;
     padding:6px 2px;
-    color:var(--text);
+    color:var(--tbl-text);
   }
-  .row-name-input:focus{outline:none;background:#FFF7E6;border-radius:6px;}
+  .row-name-input:focus{outline:none;background:rgba(62,207,142,.12);border-radius:6px;}
 
   td.cell{
     padding:4px 4px;
@@ -262,19 +273,33 @@
     font-size:.82rem;
     padding:8px 6px;
     border-radius:8px;
-    color:var(--text);
+    color:var(--tbl-text);
   }
   input.val:focus{
     outline:none;
-    border-color:var(--teal);
-    background:#F1FAF7;
+    border-color:var(--green);
+    background:rgba(62,207,142,.15);
   }
-  tr.receita td{background:#FCF7EA;}
-  tr.receita input.val{color:#8A6A1E;font-weight:600;}
+  .val-btn{
+    width:100%;
+    text-align:right;
+    border:1px solid transparent;
+    background:transparent;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:.82rem;
+    padding:8px 6px;
+    border-radius:8px;
+    color:var(--tbl-text);
+    justify-content:flex-end;
+    display:block;
+  }
+  .val-btn:active{background:rgba(62,207,142,.15);}
+  tr.receita td{background:#1F1B0E;}
+  tr.receita .val-btn, tr.receita input.val{color:var(--gold);font-weight:600;}
   tr.section-label td{
     padding:10px 10px;
-    background:var(--ink);
-    color:var(--paper);
+    background:var(--green-dim);
+    color:#CFEFDD;
     font-size:.68rem;
     text-transform:uppercase;
     letter-spacing:.1em;
@@ -282,37 +307,37 @@
   }
   tr.despesa .rowlabel{display:flex;align-items:center;gap:4px;}
   .del-btn{
-    background:none;border:none;color:#C7BFAE;font-size:1rem;
+    background:none;border:none;color:#5C6864;font-size:1rem;
     padding:2px 4px;cursor:pointer;line-height:1;flex-shrink:0;
   }
-  .del-btn:hover{color:var(--rust);}
+  .del-btn:hover{color:var(--neg);}
 
-  tr.total-row td{background:#EFEBDD;font-weight:600;}
-  tr.total-row input.val{font-weight:700;color:var(--ink-2);}
-  tr.saldo-mes-row td{background:var(--paper-2);}
+  tr.total-row td{background:var(--tbl-bg-alt);font-weight:600;}
+  tr.total-row input.val{font-weight:700;color:var(--tbl-text);}
+  tr.saldo-mes-row td{background:var(--tbl-bg);}
   tr.saldo-mes-row input.val{font-weight:700;}
-  tr.saldo-mes-row input.val.neg{color:var(--rust);}
-  tr.saldo-mes-row input.val.pos{color:var(--teal);}
+  tr.saldo-mes-row input.val.neg{color:var(--neg);}
+  tr.saldo-mes-row input.val.pos{color:var(--pos);}
   .add-row-wrap{padding:12px;}
   .add-month-th{
     min-width:56px;
     text-align:center !important;
   }
   .btn-add-month{
-    background:var(--teal);
-    color:#fff;
+    background:var(--green);
+    color:#04140D;
     border-radius:8px;
     padding:6px 10px;
     font-size:.85rem;
   }
-  .add-month-filler{background:var(--paper);}
+  .add-month-filler{background:var(--tbl-bg);}
   tr.add-despesa-row td{
     padding:10px;
-    background:var(--paper-2);
+    background:var(--tbl-bg);
   }
   .btn-add-row{
-    background:var(--ink);
-    color:var(--paper);
+    background:var(--green);
+    color:#04140D;
     width:100%;
     justify-content:center;
     padding:10px;
@@ -334,17 +359,69 @@
     position:fixed;
     bottom:20px;left:50%;
     transform:translateX(-50%) translateY(20px);
-    background:var(--ink);
-    color:var(--paper);
+    background:var(--green);
+    color:#04140D;
     padding:10px 18px;
     border-radius:20px;
     font-size:.8rem;
+    font-weight:600;
     opacity:0;
     transition:all .25s ease;
     pointer-events:none;
     z-index:50;
   }
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  .modal-backdrop{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.75);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    z-index:70;
+    padding:20px;
+  }
+  .modal-box{
+    background:var(--bg-elev);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:20px;
+    width:100%;
+    max-width:340px;
+    box-shadow:0 16px 40px rgba(0,0,0,.5);
+  }
+  .modal-box h3{
+    font-family:'Fraunces',serif;
+    font-size:1.05rem;
+    margin:0 0 4px;
+    color:var(--text);
+  }
+  .modal-current{
+    font-size:.78rem;
+    color:var(--muted);
+    margin:0 0 14px;
+  }
+  .modal-input{
+    width:100%;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:1.1rem;
+    padding:12px 14px;
+    border-radius:10px;
+    border:1px solid var(--line);
+    background:var(--bg);
+    color:var(--text);
+    text-align:right;
+    margin-bottom:14px;
+  }
+  .modal-input:focus{outline:none;border-color:var(--green);}
+  .modal-actions{
+    display:flex;
+    gap:8px;
+  }
+  .modal-actions button{flex:1;justify-content:center;}
+  #syncStatus.ok{color:var(--pos);}
+  #syncStatus.err{color:var(--neg);}
 </style>
 </head>
 <body>
@@ -377,12 +454,29 @@
         </table>
       </div>
     </div>
-    <p class="hint">Toque em qualquer célula para editar. Use vírgula ou ponto para decimais. Toque no nome de uma despesa pra renomear. Os dados ficam salvos neste aparelho automaticamente.</p>
+    <p class="hint">Toque no valor de uma despesa para somar um novo lançamento a ele. Use vírgula ou ponto para decimais — para descontar, digite um valor negativo. Toque no nome de uma despesa pra renomear. Os dados ficam salvos neste aparelho automaticamente.</p>
   </section>
 </main>
 
-<footer>Fluxo de Caixa &middot; funciona offline &middot; seus dados não saem deste aparelho</footer>
+<footer>Fluxo de Caixa &middot; <span id="syncStatus">carregando…</span></footer>
 <div class="toast" id="toast"></div>
+
+<div class="modal-backdrop" id="valueModalBackdrop" style="display:none">
+  <div class="modal-box">
+    <h3 id="modalTitle">Adicionar valor</h3>
+    <p class="modal-current" id="modalCurrent"></p>
+    <input type="text" inputmode="decimal" class="modal-input" id="modalInput" placeholder="Ex: 150,00">
+    <div class="modal-actions">
+      <button class="btn-ghost" id="modalCancel">Cancelar</button>
+      <button class="btn-primary" id="modalConfirm">Adicionar</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
 
 <script>
 const STORAGE_KEY = 'fluxo-caixa-data-v1';
@@ -417,6 +511,7 @@ const DEFAULT_DATA = {
 };
 
 let data = loadData();
+let applyingRemote = false;
 
 function loadData(){
   try{
@@ -427,7 +522,10 @@ function loadData(){
 }
 function saveData(){
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  showToast('Salvo');
+  if(!applyingRemote){
+    showToast('Salvo');
+    pushToCloud();
+  }
 }
 let toastTimer=null;
 function showToast(msg){
@@ -547,7 +645,7 @@ function render(){
         <button class="del-btn" data-del="${di}" title="Remover linha">✕</button>
       </td>`;
     for(let i=0;i<n;i++){
-      html += `<td class="cell"><input class="val" data-type="despesa" data-di="${di}" data-idx="${i}" value="${fmt(d.valores[i]||0)}"></td>`;
+      html += `<td class="cell"><button type="button" class="val-btn" data-di="${di}" data-idx="${i}">${fmt(d.valores[i]||0)}</button></td>`;
     }
     html += filler + `</tr>`;
   });
@@ -589,6 +687,13 @@ function attachHandlers(){
   document.querySelectorAll('input.val[data-type]').forEach(inp=>{
     inp.addEventListener('change', onValChange);
     inp.addEventListener('focus', function(){ this.select(); });
+  });
+  document.querySelectorAll('.val-btn').forEach(btn=>{
+    btn.addEventListener('click', function(){
+      const di = parseInt(this.dataset.di);
+      const idx = parseInt(this.dataset.idx);
+      openValueModal(di, idx);
+    });
   });
   document.querySelectorAll('.row-name-input').forEach(inp=>{
     inp.addEventListener('change', function(){
@@ -646,13 +751,51 @@ function onValChange(){
   const v = parseVal(this.value);
   if(type === 'receita'){
     data.receita[idx] = v;
-  } else if(type === 'despesa'){
-    const di = parseInt(this.dataset.di);
-    data.despesas[di].valores[idx] = v;
   }
   saveData();
   render();
 }
+
+let modalTarget = null;
+
+function openValueModal(di, idx){
+  modalTarget = {di, idx};
+  const d = data.despesas[di];
+  const atual = (d && d.valores[idx]) || 0;
+  document.getElementById('modalTitle').textContent = d ? d.nome : 'Despesa';
+  document.getElementById('modalCurrent').textContent = `Valor atual: R$ ${fmt(atual)} — ${data.months[idx].label}`;
+  const input = document.getElementById('modalInput');
+  input.value = '';
+  document.getElementById('valueModalBackdrop').style.display = 'flex';
+  setTimeout(()=>input.focus(), 50);
+}
+
+function closeValueModal(){
+  document.getElementById('valueModalBackdrop').style.display = 'none';
+  modalTarget = null;
+}
+
+function confirmValueModal(){
+  if(!modalTarget) return;
+  const {di, idx} = modalTarget;
+  const input = document.getElementById('modalInput');
+  const acrescimo = parseVal(input.value);
+  const atual = (data.despesas[di] && data.despesas[di].valores[idx]) || 0;
+  data.despesas[di].valores[idx] = atual + acrescimo;
+  saveData();
+  render();
+  closeValueModal();
+}
+
+document.getElementById('modalCancel').addEventListener('click', closeValueModal);
+document.getElementById('modalConfirm').addEventListener('click', confirmValueModal);
+document.getElementById('modalInput').addEventListener('keydown', function(e){
+  if(e.key === 'Enter'){ confirmValueModal(); }
+  if(e.key === 'Escape'){ closeValueModal(); }
+});
+document.getElementById('valueModalBackdrop').addEventListener('click', function(e){
+  if(e.target === this){ closeValueModal(); }
+});
 
 document.querySelectorAll('.tab-btn').forEach(btn=>{
   btn.addEventListener('click', function(){
@@ -665,6 +808,77 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
 });
 
 render();
+
+// ---------- Sincronização em nuvem (Firebase) ----------
+let docRef = null;
+let firebaseReady = false;
+
+function setSyncStatus(text, cls){
+  const el = document.getElementById('syncStatus');
+  if(!el) return;
+  el.textContent = text;
+  el.className = cls || '';
+}
+
+function pushToCloud(){
+  if(!firebaseReady || !docRef) return;
+  docRef.set({
+    payload: JSON.stringify(data),
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).catch(err=>{
+    console.error('Erro ao sincronizar', err);
+    setSyncStatus('erro ao sincronizar', 'err');
+  });
+}
+
+function initFirebase(){
+  if(typeof firebaseConfig === 'undefined'){
+    setSyncStatus('sincronização não configurada', 'err');
+    return;
+  }
+  try{
+    firebase.initializeApp(firebaseConfig);
+  }catch(e){
+    setSyncStatus('erro ao iniciar sincronização', 'err');
+    return;
+  }
+  setSyncStatus('conectando…');
+  firebase.auth().signInAnonymously().catch(err=>{
+    console.error('Erro de autenticação', err);
+    setSyncStatus('erro de conexão', 'err');
+  });
+  firebase.auth().onAuthStateChanged(user=>{
+    if(!user) return;
+    const db = firebase.firestore();
+    docRef = db.collection('fluxoCaixa').doc('shared');
+    firebaseReady = true;
+    docRef.onSnapshot(snap=>{
+      if(snap.exists){
+        const remote = snap.data();
+        if(remote && remote.payload){
+          const remoteStr = remote.payload;
+          const localStr = JSON.stringify(data);
+          if(remoteStr !== localStr){
+            applyingRemote = true;
+            data = JSON.parse(remoteStr);
+            localStorage.setItem(STORAGE_KEY, remoteStr);
+            render();
+            applyingRemote = false;
+          }
+        }
+      } else {
+        // Nenhum dado na nuvem ainda: sobe os dados locais como ponto de partida
+        pushToCloud();
+      }
+      setSyncStatus('sincronizado', 'ok');
+    }, err=>{
+      console.error('Erro ao ouvir mudanças', err);
+      setSyncStatus('erro ao sincronizar', 'err');
+    });
+  });
+}
+
+initFirebase();
 
 if('serviceWorker' in navigator){
   window.addEventListener('load', ()=>{
