@@ -596,7 +596,7 @@ function cartaoBoxHtml(nome, gasto, limite){
   return `<div class="resumo-box ${cls}">
     <span class="rb-label">${nome}</span>
     <span class="rb-value">R$ ${fmt(restante)}</span>
-    <span class="rb-sub">${restante < 0 ? 'Limite ultrapassado' : Limite restante para uso'}</span>
+    <span class="rb-sub">${restante < 0 ? 'Limite ultrapassado' : 'Limite restante para uso'}</span>
     <span class="rb-detail">R$ ${fmt(gasto)} usado de R$ ${fmt(limite)}</span>
   </div>`;
 }
