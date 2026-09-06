@@ -521,6 +521,25 @@ const DEFAULT_DATA = {
 let data = loadData();
 let applyingRemote = false;
 
+// Migração única: zera receita e despesas a partir de outubro/26 em diante
+// (mantém só o mês em vigência preenchido). Roda uma vez só, marcada por
+// uma flag guardada nos próprios dados (sincroniza com a nuvem também).
+function applyOneTimeMigrations(alvo){
+  let changed = false;
+  if(!alvo._migZeraFuturo){
+    for(let i=1;i<alvo.months.length;i++){
+      alvo.receita[i] = 0;
+      alvo.despesas.forEach(d=>{ d.valores[i] = 0; });
+    }
+    alvo._migZeraFuturo = true;
+    changed = true;
+  }
+  return changed;
+}
+if(applyOneTimeMigrations(data)){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+}
+
 function loadData(){
   try{
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -618,8 +637,10 @@ function renderResumo(){
   if(mesEl){
     mesEl.textContent = `Mês em vigência: ${data.months[idx].label}`;
   }
-  const jenni = data.despesas.find(d => d.id === 'jenni');
-  const sicredi = data.despesas.find(d => d.id === 'sicredi');
+  const jenni = data.despesas.find(d => d.id === 'jenni') ||
+    data.despesas.find(d => (d.nome||'').toLowerCase().includes('jenni'));
+  const sicredi = data.despesas.find(d => d.id === 'sicredi') ||
+    data.despesas.find(d => (d.nome||'').toLowerCase().includes('sicredi'));
   const jenniGasto = (jenni && jenni.valores[idx]) || 0;
   const sicrediGasto = (sicredi && sicredi.valores[idx]) || 0;
 
@@ -874,12 +895,19 @@ function initFirebase(){
             applyingRemote = true;
             data = JSON.parse(remoteStr);
             localStorage.setItem(STORAGE_KEY, remoteStr);
-            render();
             applyingRemote = false;
           }
         }
       } else {
         // Nenhum dado na nuvem ainda: sobe os dados locais como ponto de partida
+        pushToCloud();
+      }
+      // Garante que a migração (zerar meses futuros) também é aplicada
+      // aos dados vindos da nuvem, e sincroniza o resultado nos dois lados.
+      const migrado = applyOneTimeMigrations(data);
+      render();
+      if(migrado){
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
         pushToCloud();
       }
       setSyncStatus('sincronizado', 'ok');
