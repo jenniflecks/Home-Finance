@@ -231,11 +231,11 @@
   tbody tr.despesa:nth-of-type(even) td{background:var(--tbl-bg-alt);}
   thead th{
     background:var(--tbl-bg);
-    color:var(--tbl-muted);
-    font-size:.7rem;
+    color:var(--tbl-text);
+    font-size:.72rem;
     text-transform:uppercase;
     letter-spacing:.06em;
-    font-weight:700;
+    font-weight:800;
     padding:10px 10px;
     text-align:right;
     position:sticky;
@@ -421,6 +421,30 @@
     color:var(--muted);
     margin:0 0 14px;
   }
+  .modal-mode-toggle{
+    display:flex;
+    gap:6px;
+    margin-bottom:14px;
+    background:var(--bg);
+    padding:4px;
+    border-radius:10px;
+    border:1px solid var(--line);
+  }
+  .mode-btn{
+    flex:1;
+    background:transparent;
+    color:var(--muted);
+    border:none;
+    padding:8px 6px;
+    border-radius:7px;
+    font-size:.72rem;
+    font-weight:600;
+    justify-content:center;
+  }
+  .mode-btn.active{
+    background:var(--green);
+    color:#04140D;
+  }
   .modal-input{
     width:100%;
     font-family:'IBM Plex Mono',monospace;
@@ -474,7 +498,7 @@
         </table>
       </div>
     </div>
-    <p class="hint">Toque no valor de uma despesa para somar um novo lançamento a ele. Use vírgula ou ponto para decimais — para descontar, digite um valor negativo. Toque no nome de uma despesa pra renomear. Os dados ficam salvos neste aparelho automaticamente.</p>
+    <p class="hint">Toque no valor de uma despesa para abrir as opções: somar/subtrair um lançamento (digite negativo para descontar) ou substituir o valor inteiro. As despesas ficam sempre em ordem alfabética. Toque no nome de uma despesa pra renomear. Os dados ficam salvos neste aparelho automaticamente.</p>
   </section>
 </main>
 
@@ -483,12 +507,16 @@
 
 <div class="modal-backdrop" id="valueModalBackdrop" style="display:none">
   <div class="modal-box">
-    <h3 id="modalTitle">Adicionar valor</h3>
+    <h3 id="modalTitle">Editar valor</h3>
     <p class="modal-current" id="modalCurrent"></p>
+    <div class="modal-mode-toggle">
+      <button type="button" class="mode-btn active" id="modeSoma" data-mode="soma">Somar / Subtrair</button>
+      <button type="button" class="mode-btn" id="modeSubstituir" data-mode="substituir">Substituir valor</button>
+    </div>
     <input type="text" inputmode="decimal" class="modal-input" id="modalInput" placeholder="Ex: 150,00">
     <div class="modal-actions">
       <button class="btn-ghost" id="modalCancel">Cancelar</button>
-      <button class="btn-primary" id="modalConfirm">Adicionar</button>
+      <button class="btn-primary" id="modalConfirm">Somar</button>
     </div>
   </div>
 </div>
@@ -717,6 +745,9 @@ function render(){
 
   html += `<tr class="section-label"><td colspan="${n+2}">Despesas</td></tr>`;
 
+  // Mantém a lista de despesas sempre em ordem alfabética
+  data.despesas.sort((a,b)=> (a.nome||'').localeCompare((b.nome||''), 'pt-BR', {sensitivity:'base'}));
+
   data.despesas.forEach((d, di)=>{
     html += `<tr class="despesa" data-row="despesa" data-di="${di}">
       <td class="rowlabel">
@@ -785,6 +816,7 @@ function attachHandlers(){
       const di = parseInt(this.dataset.di);
       data.despesas[di].nome = this.value || 'Sem nome';
       saveData();
+      render();
     });
   });
   document.querySelectorAll('.del-btn').forEach(btn=>{
@@ -842,6 +874,22 @@ function onValChange(){
 }
 
 let modalTarget = null;
+let modalMode = 'soma';
+
+function setModalMode(mode){
+  modalMode = mode;
+  document.getElementById('modeSoma').classList.toggle('active', mode === 'soma');
+  document.getElementById('modeSubstituir').classList.toggle('active', mode === 'substituir');
+  const input = document.getElementById('modalInput');
+  const confirmBtn = document.getElementById('modalConfirm');
+  if(mode === 'soma'){
+    input.placeholder = 'Ex: 150,00 (ou -50 para descontar)';
+    confirmBtn.textContent = 'Somar';
+  } else {
+    input.placeholder = 'Ex: 200,00 (valor final da despesa)';
+    confirmBtn.textContent = 'Substituir';
+  }
+}
 
 function openValueModal(di, idx){
   modalTarget = {di, idx};
@@ -851,6 +899,7 @@ function openValueModal(di, idx){
   document.getElementById('modalCurrent').textContent = `Valor atual: R$ ${fmt(atual)} — ${data.months[idx].label}`;
   const input = document.getElementById('modalInput');
   input.value = '';
+  setModalMode('soma');
   document.getElementById('valueModalBackdrop').style.display = 'flex';
   setTimeout(()=>input.focus(), 50);
 }
@@ -864,14 +913,20 @@ function confirmValueModal(){
   if(!modalTarget) return;
   const {di, idx} = modalTarget;
   const input = document.getElementById('modalInput');
-  const acrescimo = parseVal(input.value);
-  const atual = (data.despesas[di] && data.despesas[di].valores[idx]) || 0;
-  data.despesas[di].valores[idx] = atual + acrescimo;
+  const valorDigitado = parseVal(input.value);
+  if(modalMode === 'substituir'){
+    data.despesas[di].valores[idx] = valorDigitado;
+  } else {
+    const atual = (data.despesas[di] && data.despesas[di].valores[idx]) || 0;
+    data.despesas[di].valores[idx] = atual + valorDigitado;
+  }
   saveData();
   render();
   closeValueModal();
 }
 
+document.getElementById('modeSoma').addEventListener('click', ()=>setModalMode('soma'));
+document.getElementById('modeSubstituir').addEventListener('click', ()=>setModalMode('substituir'));
 document.getElementById('modalCancel').addEventListener('click', closeValueModal);
 document.getElementById('modalConfirm').addEventListener('click', confirmValueModal);
 document.getElementById('modalInput').addEventListener('keydown', function(e){
