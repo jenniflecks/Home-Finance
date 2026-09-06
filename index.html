@@ -325,6 +325,11 @@
   tr.saldo-mes-row input.val{font-weight:700;}
   tr.saldo-mes-row input.val.neg{color:var(--neg);}
   tr.saldo-mes-row input.val.pos{color:var(--pos);}
+  tr.saldo-acum-row td{background:var(--green-dim);}
+  tr.saldo-acum-row input.val{font-weight:700;color:var(--tbl-text);}
+  tr.saldo-acum-row input.val.neg{color:#FF9C7D;}
+  tr.saldo-acum-row input.val.pos{color:#CFEFDD;}
+  tr.saldo-acum-row .rowlabel{background:var(--green-dim);}
   .add-row-wrap{padding:12px;}
   .add-month-th{
     min-width:56px;
@@ -451,7 +456,7 @@
 
   <section id="tab-historico" class="tab-panel" style="display:none">
     <div class="vigencia-banner">
-      <span class="label">Saldo do mês em vigência</span>
+      <span class="label">Saldo disponível (acumulado até o mês em vigência)</span>
       <span class="value" id="vigenciaValue">R$ 0,00</span>
     </div>
     <div class="card">
@@ -625,13 +630,13 @@ function saldoBoxHtml(nome, saldo){
   return `<div class="resumo-box ${cls}">
     <span class="rb-label">${nome}</span>
     <span class="rb-value">R$ ${fmt(saldo)}</span>
-    <span class="rb-sub">${saldo < 0 ? 'Déficit no mês' : 'Superavit no mês'}</span>
+    <span class="rb-sub">${saldo < 0 ? 'Déficit acumulado' : 'Saldo acumulado até o mês'}</span>
   </div>`;
 }
 
 function renderResumo(){
   const idx = getCurrentMonthIndex();
-  const {saldoMes} = computeTotals();
+  const {saldoAcum} = computeTotals();
 
   const mesEl = document.getElementById('resumoMes');
   if(mesEl){
@@ -648,7 +653,7 @@ function renderResumo(){
   boxesEl.innerHTML =
     cartaoBoxHtml('Cartão Nubank Jenni', jenniGasto, LIMITES_CARTAO.jenni) +
     cartaoBoxHtml('Cartão Sicredi', sicrediGasto, LIMITES_CARTAO.sicredi) +
-    saldoBoxHtml('Saldo do Mês', saldoMes[idx] || 0);
+    saldoBoxHtml('Saldo Disponível', saldoAcum[idx] || 0);
 }
 
 function render(){
@@ -685,7 +690,7 @@ function render(){
 
   html += `<tr class="add-despesa-row"><td colspan="${n+2}"><button id="addRowBtn" class="btn-add-row">+ Adicionar despesa</button></td></tr>`;
 
-  const {totalDespesas, saldoMes} = computeTotals();
+  const {totalDespesas, saldoMes, saldoAcum} = computeTotals();
 
   html += `<tr class="total-row"><td class="rowlabel">Total de despesas</td>`;
   for(let i=0;i<n;i++){ html += `<td class="cell"><input class="val" readonly value="${fmt(totalDespesas[i])}"></td>`; }
@@ -698,12 +703,19 @@ function render(){
   }
   html += filler + `</tr>`;
 
+  html += `<tr class="saldo-acum-row"><td class="rowlabel">Saldo acumulado</td>`;
+  for(let i=0;i<n;i++){
+    const cls = saldoAcum[i] < 0 ? 'neg' : 'pos';
+    html += `<td class="cell"><input class="val ${cls}" readonly value="${fmt(saldoAcum[i])}"></td>`;
+  }
+  html += filler + `</tr>`;
+
   tbody.innerHTML = html;
 
-  // Banner de saldo do mês em vigência
+  // Banner de saldo disponível (acumulado) até o mês em vigência
   const idxVigencia = getCurrentMonthIndex();
   const vigenciaEl = document.getElementById('vigenciaValue');
-  const valorVigencia = saldoMes[idxVigencia] || 0;
+  const valorVigencia = saldoAcum[idxVigencia] || 0;
   vigenciaEl.textContent = 'R$ ' + fmt(valorVigencia);
   vigenciaEl.className = 'value ' + (valorVigencia < 0 ? 'neg' : 'pos');
 
