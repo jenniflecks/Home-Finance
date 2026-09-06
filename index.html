@@ -232,10 +232,10 @@
   thead th{
     background:var(--tbl-bg);
     color:var(--tbl-muted);
-    font-size:.68rem;
+    font-size:.7rem;
     text-transform:uppercase;
     letter-spacing:.06em;
-    font-weight:600;
+    font-weight:700;
     padding:10px 10px;
     text-align:right;
     position:sticky;
@@ -250,6 +250,13 @@
     box-shadow:2px 0 4px rgba(0,0,0,.35);
   }
   thead th:first-child{background:var(--tbl-bg);z-index:3;}
+  thead th.current-month{
+    background:var(--green) !important;
+    color:#04140D !important;
+    font-size:.76rem;
+  }
+  td.cell.current-cell{background:rgba(62,207,142,.14) !important;}
+  tr.despesa:nth-of-type(even) td.current-cell{background:rgba(62,207,142,.20) !important;}
 
   td.rowlabel{
     padding:6px 8px;
@@ -541,7 +548,39 @@ function applyOneTimeMigrations(alvo){
   }
   return changed;
 }
-if(applyOneTimeMigrations(data)){
+
+const LABELS_MES_PT = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+// Garante que o mês atual do calendário sempre exista na tabela — se o app
+// ficar dias/semanas sem ser aberto, cria todos os meses que faltarem.
+function ensureMonthsUpToNow(alvo){
+  let changed = false;
+  const now = new Date();
+  const currentKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  let guard = 0;
+  while(alvo.months[alvo.months.length-1].key < currentKey && guard < 60){
+    const lastMonth = alvo.months[alvo.months.length-1];
+    const [y,m] = lastMonth.key.split('-').map(Number);
+    let ny = y, nm = m+1;
+    if(nm > 12){ nm = 1; ny += 1; }
+    const label = `${LABELS_MES_PT[nm-1]}/${String(ny).slice(2)}`;
+    alvo.months.push({key:`${ny}-${String(nm).padStart(2,'0')}`, label});
+    alvo.receita.push(0);
+    alvo.despesas.forEach(d=>d.valores.push(0));
+    changed = true;
+    guard++;
+  }
+  return changed;
+}
+
+function runMaintenance(alvo){
+  let changed = false;
+  if(applyOneTimeMigrations(alvo)) changed = true;
+  if(ensureMonthsUpToNow(alvo)) changed = true;
+  return changed;
+}
+
+if(runMaintenance(data)){
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
 }
 
@@ -659,18 +698,20 @@ function renderResumo(){
 function render(){
   renderResumo();
   const n = data.months.length;
+  const idxVigencia = getCurrentMonthIndex();
   const headRow = document.getElementById('headRow');
-  headRow.innerHTML = '<th>Categoria</th>' + data.months.map(m=>`<th>${m.label}</th>`).join('')
+  headRow.innerHTML = '<th>Categoria</th>' + data.months.map((m,i)=>`<th class="${i===idxVigencia?'current-month':''}">${m.label}</th>`).join('')
     + `<th class="add-month-th"><button id="addMonthBtn" class="btn-add-month" title="Adicionar mês">+</button></th>`;
 
   const tbody = document.getElementById('tbody');
   let html = '';
   const filler = `<td class="cell add-month-filler"></td>`;
+  const cur = i => i===idxVigencia ? ' current-cell' : '';
 
   // Receita row
   html += `<tr class="receita" data-row="receita"><td class="rowlabel">Recebimento</td>`;
   for(let i=0;i<n;i++){
-    html += `<td class="cell"><input class="val" data-type="receita" data-idx="${i}" value="${fmt(data.receita[i]||0)}"></td>`;
+    html += `<td class="cell${cur(i)}"><input class="val" data-type="receita" data-idx="${i}" value="${fmt(data.receita[i]||0)}"></td>`;
   }
   html += filler + `</tr>`;
 
@@ -683,7 +724,7 @@ function render(){
         <button class="del-btn" data-del="${di}" title="Remover linha">✕</button>
       </td>`;
     for(let i=0;i<n;i++){
-      html += `<td class="cell"><button type="button" class="val-btn" data-di="${di}" data-idx="${i}">${fmt(d.valores[i]||0)}</button></td>`;
+      html += `<td class="cell${cur(i)}"><button type="button" class="val-btn" data-di="${di}" data-idx="${i}">${fmt(d.valores[i]||0)}</button></td>`;
     }
     html += filler + `</tr>`;
   });
@@ -693,27 +734,26 @@ function render(){
   const {totalDespesas, saldoMes, saldoAcum} = computeTotals();
 
   html += `<tr class="total-row"><td class="rowlabel">Total de despesas</td>`;
-  for(let i=0;i<n;i++){ html += `<td class="cell"><input class="val" readonly value="${fmt(totalDespesas[i])}"></td>`; }
+  for(let i=0;i<n;i++){ html += `<td class="cell${cur(i)}"><input class="val" readonly value="${fmt(totalDespesas[i])}"></td>`; }
   html += filler + `</tr>`;
 
   html += `<tr class="saldo-mes-row"><td class="rowlabel">Saldo do mês</td>`;
   for(let i=0;i<n;i++){
     const cls = saldoMes[i] < 0 ? 'neg' : 'pos';
-    html += `<td class="cell"><input class="val ${cls}" readonly value="${fmt(saldoMes[i])}"></td>`;
+    html += `<td class="cell${cur(i)}"><input class="val ${cls}" readonly value="${fmt(saldoMes[i])}"></td>`;
   }
   html += filler + `</tr>`;
 
   html += `<tr class="saldo-acum-row"><td class="rowlabel">Saldo acumulado</td>`;
   for(let i=0;i<n;i++){
     const cls = saldoAcum[i] < 0 ? 'neg' : 'pos';
-    html += `<td class="cell"><input class="val ${cls}" readonly value="${fmt(saldoAcum[i])}"></td>`;
+    html += `<td class="cell${cur(i)}"><input class="val ${cls}" readonly value="${fmt(saldoAcum[i])}"></td>`;
   }
   html += filler + `</tr>`;
 
   tbody.innerHTML = html;
 
   // Banner de saldo disponível (acumulado) até o mês em vigência
-  const idxVigencia = getCurrentMonthIndex();
   const vigenciaEl = document.getElementById('vigenciaValue');
   const valorVigencia = saldoAcum[idxVigencia] || 0;
   vigenciaEl.textContent = 'R$ ' + fmt(valorVigencia);
@@ -916,7 +956,7 @@ function initFirebase(){
       }
       // Garante que a migração (zerar meses futuros) também é aplicada
       // aos dados vindos da nuvem, e sincroniza o resultado nos dois lados.
-      const migrado = applyOneTimeMigrations(data);
+      const migrado = runMaintenance(data);
       render();
       if(migrado){
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
