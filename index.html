@@ -578,15 +578,19 @@ function applyOneTimeMigrations(alvo){
 }
 
 const LABELS_MES_PT = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const NOMES_MES_PT = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 
-// Garante que o mês atual do calendário sempre exista na tabela — se o app
-// ficar dias/semanas sem ser aberto, cria todos os meses que faltarem.
+// Garante que sempre exista pelo menos 1 mês de folga à frente do mês atual
+// do calendário (necessário pra prévia do Cartão Sicredi do mês seguinte).
+// Se o app ficar dias/semanas sem ser aberto, cria todos os meses que faltarem.
 function ensureMonthsUpToNow(alvo){
   let changed = false;
   const now = new Date();
-  const currentKey = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  let ty = now.getFullYear(), tm = now.getMonth()+1+1; // um mês à frente do atual
+  if(tm > 12){ tm -= 12; ty += 1; }
+  const targetKey = `${ty}-${String(tm).padStart(2,'0')}`;
   let guard = 0;
-  while(alvo.months[alvo.months.length-1].key < currentKey && guard < 60){
+  while(alvo.months[alvo.months.length-1].key < targetKey && guard < 60){
     const lastMonth = alvo.months[alvo.months.length-1];
     const [y,m] = lastMonth.key.split('-').map(Number);
     let ny = y, nm = m+1;
@@ -717,10 +721,23 @@ function renderResumo(){
   const sicrediGasto = (sicredi && sicredi.valores[idx]) || 0;
 
   const boxesEl = document.getElementById('resumoBoxes');
-  boxesEl.innerHTML =
+  let html =
     cartaoBoxHtml('Cartão Nubank Jenni', jenniGasto, LIMITES_CARTAO.jenni) +
     cartaoBoxHtml('Cartão Sicredi', sicrediGasto, LIMITES_CARTAO.sicredi) +
     saldoBoxHtml('Saldo Disponível', saldoAcum[idx] || 0);
+
+  // A partir do dia 23, o Sicredi já fecha pro mês seguinte: mostra uma
+  // prévia do cartão do próximo mês, com o mesmo limite de R$ 2.800.
+  const hoje = new Date();
+  if(hoje.getDate() >= 23 && data.months[idx+1]){
+    const nextIdx = idx+1;
+    const [ny, nm] = data.months[nextIdx].key.split('-').map(Number);
+    const nomeMesProximo = NOMES_MES_PT[nm-1];
+    const sicrediGastoProximo = (sicredi && sicredi.valores[nextIdx]) || 0;
+    html += cartaoBoxHtml(`Cartão Sicredi ${nomeMesProximo}`, sicrediGastoProximo, LIMITES_CARTAO.sicredi);
+  }
+
+  boxesEl.innerHTML = html;
 }
 
 function render(){
