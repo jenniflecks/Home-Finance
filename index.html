@@ -118,6 +118,22 @@
   .vigencia-banner .value.neg{color:var(--neg);}
   .vigencia-banner .value.pos{color:var(--pos);}
 
+  .archive-bar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    background:var(--bg-elev);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:10px 14px;
+    margin-bottom:14px;
+  }
+  .archive-bar span{
+    font-size:.74rem;
+    color:var(--muted);
+  }
+
   .resumo-title{
     font-family:'Fraunces',serif;
     font-weight:700;
@@ -490,6 +506,10 @@
       <span class="label">Saldo disponível (acumulado até o mês em vigência)</span>
       <span class="value" id="vigenciaValue">R$ 0,00</span>
     </div>
+    <div class="archive-bar" id="archiveBar" style="display:none">
+      <span id="archiveText"></span>
+      <button class="btn-primary" id="archiveBtn">Contas Pagas</button>
+    </div>
     <div class="card">
       <div class="table-scroll">
         <table id="mainTable">
@@ -667,7 +687,7 @@ function computeTotals(){
   const saldoMes = new Array(n).fill(0);
   for(let i=0;i<n;i++){ saldoMes[i] = (data.receita[i]||0) - totalDespesas[i]; }
   const saldoAcum = new Array(n).fill(0);
-  let acc = 0;
+  let acc = data.saldoInicial || 0;
   for(let i=0;i<n;i++){ acc += saldoMes[i]; saldoAcum[i] = acc; }
   return {totalDespesas, saldoMes, saldoAcum};
 }
@@ -807,7 +827,47 @@ function render(){
   vigenciaEl.textContent = 'R$ ' + fmt(valorVigencia);
   vigenciaEl.className = 'value ' + (valorVigencia < 0 ? 'neg' : 'pos');
 
+  // Barra de "remover meses passados do histórico" — só aparece se existir
+  // pelo menos um mês antes do mês em vigência.
+  const archiveBar = document.getElementById('archiveBar');
+  if(archiveBar){
+    if(idxVigencia > 0){
+      archiveBar.style.display = 'flex';
+      const nomesCompletos = data.months.slice(0, idxVigencia).map(m=>{
+        const [ano] = m.key.split('-');
+        const abrev = m.label.split('/')[0];
+        return `${abrev}/${ano}`;
+      }).join(', ');
+      document.getElementById('archiveText').textContent =
+        idxVigencia === 1 ? `${nomesCompletos} encerrado` : `${nomesCompletos} encerrados`;
+    } else {
+      archiveBar.style.display = 'none';
+    }
+  }
+
   attachHandlers();
+}
+
+function arquivarMesesAnteriores(){
+  const idx = getCurrentMonthIndex();
+  if(idx <= 0) return;
+  const nomes = data.months.slice(0, idx).map(m=>m.label).join(', ');
+  const confirmou = confirm(
+    `Remover ${nomes} do histórico?\n\nO saldo que esses meses deixaram (positivo ou negativo) continua somado no Saldo Disponível — só a tabela detalhada deles vai sumir da tela.`
+  );
+  if(!confirmou) return;
+
+  const {saldoMes} = computeTotals();
+  let somaRemovida = 0;
+  for(let i=0;i<idx;i++){ somaRemovida += saldoMes[i]; }
+
+  data.saldoInicial = (data.saldoInicial || 0) + somaRemovida;
+  data.months.splice(0, idx);
+  data.receita.splice(0, idx);
+  data.despesas.forEach(d => d.valores.splice(0, idx));
+
+  saveData();
+  render();
 }
 
 function escapeHtml(s){
@@ -963,6 +1023,11 @@ document.querySelectorAll('.tab-btn').forEach(btn=>{
     document.getElementById('tab-'+target).style.display = '';
   });
 });
+
+const archiveBtnEl = document.getElementById('archiveBtn');
+if(archiveBtnEl){
+  archiveBtnEl.addEventListener('click', arquivarMesesAnteriores);
+}
 
 render();
 
