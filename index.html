@@ -589,6 +589,20 @@ function applyOneTimeMigrations(alvo){
     alvo._migZeraFuturo = true;
     changed = true;
   }
+  // Recomeço a partir de novembro/26: descarta os meses anteriores e zera o
+  // saldo que vinha de trás, para o saldo de novembro contar só do próprio mês.
+  if(!alvo._migInicioNov2026){
+    const corte = '2026-11';
+    const remover = alvo.months.filter(m => m.key < corte).length;
+    if(remover > 0 && remover < alvo.months.length){
+      alvo.months.splice(0, remover);
+      alvo.receita.splice(0, remover);
+      alvo.despesas.forEach(d => d.valores.splice(0, remover));
+    }
+    alvo.saldoInicial = 0;
+    alvo._migInicioNov2026 = true;
+    changed = true;
+  }
   return changed;
 }
 
